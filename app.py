@@ -24,7 +24,6 @@ def load_catalog():
     """Load ATA Catalog"""
     catalog_path = Path("catalog/ata_catalog.json")
     if not catalog_path.exists():
-        st.error("❌ Catalog not found. Please run: python scripts/build_ata_catalog.py --tar <SGML.tar>")
         return None
     
     try:
@@ -34,6 +33,39 @@ def load_catalog():
         st.error(f"❌ Error loading catalog: {str(e)}")
         return None
 
+def show_catalog_setup_guide():
+    """Show guide for setting up catalog"""
+    st.warning("⚠️ Catalog not found - Please build the catalog first")
+    
+    with st.expander("📘 How to build the catalog", expanded=True):
+        st.markdown("""
+        ### Option 1: Build from SGML files
+        
+        If you have SGML manual files:
+        
+        ```bash
+        python scripts/build_ata_catalog.py --tar path/to/SGML_A320.tar
+        ```
+        
+        ### Option 2: Use sample catalog (for testing)
+        
+        Create a minimal catalog for testing:
+        
+        ```bash
+        python scripts/create_sample_catalog.py
+        ```
+        
+        ### Option 3: Manual catalog directory
+        
+        Or place your pre-built catalog files in:
+        - `catalog/ata_catalog.json`
+        - `catalog/model/tfidf_vectorizer.pkl`
+        - `catalog/model/tfidf_matrix.pkl`
+        """)
+        
+        if st.button("🔄 Refresh - Check Again"):
+            st.rerun()
+
 def main():
     st.title("✈️ ATA Work Order Analyzer")
     st.markdown("**Xác định ATA 4 ký tự từ Work Orders**")
@@ -42,11 +74,23 @@ def main():
     with st.sidebar:
         st.header("⚙️ Configuration")
         
+        # Check catalog status
+        catalog_exists = Path("catalog/ata_catalog.json").exists()
+        
+        if catalog_exists:
+            st.success("✅ Catalog loaded")
+        else:
+            st.error("❌ Catalog not found")
+            st.caption("Build catalog first")
+        
+        st.divider()
+        
         # Mode selection
         mode = st.radio(
             "Processing Mode",
             ["Catalog (TF-IDF)", "RAG (Advanced)"],
-            help="Catalog mode: Fast, offline | RAG mode: Deep search, requires API"
+            help="Catalog mode: Fast, offline | RAG mode: Deep search, requires API",
+            disabled=not catalog_exists
         )
         
         # Confidence threshold
@@ -56,23 +100,17 @@ def main():
             max_value=1.0,
             value=0.75,
             step=0.05,
-            help="Minimum confidence for CONFIRM/CORRECT decisions"
+            help="Minimum confidence for CONFIRM/CORRECT decisions",
+            disabled=not catalog_exists
         )
         
         # Non-defect filtering
         filter_non_defect = st.checkbox(
             "Filter Non-Defect WOs",
             value=True,
-            help="Remove routine maintenance, cleaning, etc."
+            help="Remove routine maintenance, cleaning, etc.",
+            disabled=not catalog_exists
         )
-        
-        st.divider()
-        
-        # Status
-        if Path("catalog/ata_catalog.json").exists():
-            st.success("✅ Catalog loaded")
-        else:
-            st.warning("⚠️ Catalog not found")
         
         st.divider()
         st.markdown("### 📚 Quick Guide")
@@ -87,6 +125,11 @@ def main():
     tab1, tab2, tab3 = st.tabs(["📤 Upload & Process", "📊 Results", "ℹ️ Help"])
     
     with tab1:
+        # Check if catalog exists
+        if not Path("catalog/ata_catalog.json").exists():
+            show_catalog_setup_guide()
+            return
+        
         st.header("Upload Work Orders")
         
         uploaded_file = st.file_uploader(
