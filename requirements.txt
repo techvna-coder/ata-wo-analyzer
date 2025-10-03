@@ -1,0 +1,27 @@
+# Core dependencies
+streamlit>=1.28.0
+pandas>=2.0.0
+openpyxl>=3.1.0
+numpy>=1.24.0
+
+# SGML/XML parsing
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Text processing & ML
+regex>=2023.10.0
+scikit-learn>=1.3.0
+joblib>=1.3.0
+
+# Optional: RAG mode
+# Uncomment if using RAG features
+# faiss-cpu>=1.7.4
+# duckdb>=0.9.0
+# langchain>=0.1.0
+# langchain-openai>=0.0.5
+# tiktoken>=0.5.0
+# openai>=1.3.0
+
+# Utilities
+python-dotenv>=1.0.0
+tqdm>=4.66.0
