@@ -1,4 +1,3 @@
-
 """
 Core package for ATA WO Analyzer
 """
